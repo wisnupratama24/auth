@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import authSvg from "./../assets/auth.svg";
 import { ToastContainer, toast } from "react-toastify";
-import { authenticate, isAuth } from "./../helpers/auth";
+import { isAuth } from "./../helpers/auth";
 import axios from "axios";
 import { Redirect } from "react-router-dom";
 
@@ -27,15 +27,11 @@ export const Register = () => {
     if (name && email && password1) {
       if (password1 === password2) {
         axios
-          .post(
-            `${process.env.REACT_APP_API_URL}/register`,
-            {
-              name,
-              email,
-              password1: password1,
-            },
-            console.log(e)
-          )
+          .post(`${process.env.REACT_APP_API_URL}/register`, {
+            name,
+            email,
+            password: password1,
+          })
           .then((res) => {
             setFromData({
               ...formData,

@@ -1,12 +1,19 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-// Load controllers
-
 const {
-    registerController
-} = require('../controllers/authController.js')
+  validLogin,
+  validRegister,
+  forgotPasswordValidator,
+  resetPasswordValidator,
+} = require("../config/validation");
 
-router.post('/register', registerController);
+// Load controllers
+const {
+  registerController,
+  activationController,
+} = require("../controllers/authController.js");
+
+router.post("/register", registerController);
+router.post("/activation", activationController);
 module.exports = router;
-
