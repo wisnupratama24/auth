@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 // custom errror
 const { errorHandler } = require("../helpers/dbErrorHandling");
 const nodemailer = require("nodemailer");
+const { use } = require("../routes/authroute");
 
 exports.registerController = (req, res) => {
   const { name, email, password } = req.body;
@@ -120,4 +121,53 @@ exports.activationController = (req, res) => {
       message: "error happening please try again",
     });
   }
+};
+
+exports.loginController = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const firstError = errors.array().map((err) => err.msg)[0];
+      return res.status(422).json({
+        error: firstError,
+      });
+    } else {
+      User.findOne({
+        email,
+      }).exec((err, user) => {
+        if (err || user == null) {
+          return res.status(400).json({
+            error: "User with that email does not exist. Please signup",
+          });
+        } else {
+          // // Authenticate
+          if (!user.authenticate(password)) {
+            return res.status(400).json({
+              error: "Email and password don't match",
+            });
+          }
+          // Generate token
+          const token = jwt.sign(
+            {
+              _id: user._id,
+            },
+            process.env.JWT_SECRET,
+            {
+              expiresIn: "7d",
+            }
+          );
+          const { _id, name, email, role } = user;
+          return res.json({
+            message: `Welcome, ${name}`,
+            token,
+            _id,
+            name,
+            email,
+            role,
+          });
+        }
+      });
+    }
+  } catch (error) {}
 };

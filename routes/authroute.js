@@ -12,8 +12,10 @@ const {
 const {
   registerController,
   activationController,
-} = require("../controllers/authController.js");
+  loginController,
+} = require("../controllers/authController");
 
-router.post("/register", registerController);
+router.post("/register", validRegister, registerController);
+router.post("/login", validLogin, loginController);
 router.post("/activation", activationController);
 module.exports = router;

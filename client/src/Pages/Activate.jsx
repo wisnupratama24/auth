@@ -3,14 +3,13 @@ import authSvg from "../assets/auth.svg";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 import jwt from "jsonwebtoken";
-import { authenticate, isAuth } from "../helpers/auth";
-import { Link, Redirect } from "react-router-dom";
+import { isAuth } from "../helpers/auth";
+import { Redirect } from "react-router-dom";
 
 export const Activate = ({ match }) => {
   const [formData, setFormData] = useState({
     name: "",
     token: "",
-    show: true,
   });
 
   useEffect(() => {
@@ -23,19 +22,18 @@ export const Activate = ({ match }) => {
 
     console.log(token, name);
   }, [match.params]);
-  const { name, token, show } = formData;
+
+  const { name, token } = formData;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(token);
     axios
-      .post(`http://localhost:5000/api/activation`, {
+      .post(`${process.env.REACT_APP_API_URL}/activation`, {
         token: token,
       })
       .then((res) => {
         setFormData({
           ...formData,
-          show: false,
         });
 
         toast.success(res.data.message);

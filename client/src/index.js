@@ -5,6 +5,7 @@ import App from "./App";
 import { Register } from "./Pages/Register";
 import "react-toastify/dist/ReactToastify.css";
 import { Activate } from "./Pages/Activate";
+import { Login } from "./Pages/Login";
 
 ReactDOM.render(
   <BrowserRouter>
@@ -20,6 +21,7 @@ ReactDOM.render(
         exact
         render={(props) => <Activate {...props} />}
       />
+      <Route path="/login" exact render={(props) => <Login {...props} />} />
     </Switch>
   </BrowserRouter>,
   document.getElementById("root")
