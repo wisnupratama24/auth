@@ -29,16 +29,14 @@ exports.validLogin = [
 
 exports.forgotPasswordValidator = [
   check("email")
-    .not()
-    .isEmpty()
+    .notEmpty()
     .isEmail()
     .withMessage("Must be a valid email address"),
 ];
 
 exports.resetPasswordValidator = [
   check("newPassword")
-    .not()
-    .isEmpty()
+    .notEmpty()
     .isLength({
       min: 6,
     })

@@ -92,8 +92,6 @@ exports.activationController = (req, res) => {
         });
       } else {
         const { name, email, password } = jwt.decode(token);
-
-        console.log(email);
         const user = new User({
           name,
           email,
@@ -168,6 +166,140 @@ exports.loginController = async (req, res) => {
           });
         }
       });
+    }
+  } catch (error) {}
+};
+
+exports.forgetPasswordController = (req, res) => {
+  const { email } = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const firstError = errors.array().map((err) => err.msg)[0];
+
+    return res.status(422).json({
+      error: firstError,
+    });
+  } else {
+    User.findOne({ email }).exec((err, user) => {
+      if (err || user == null) {
+        return res.status(404).json({
+          error: "User with that email does not exist",
+        });
+      } else {
+        const token = jwt.sign(
+          {
+            _id: user._id,
+          },
+          process.env.JWT_SECRET_RESET,
+          {
+            expiresIn: "10m",
+          }
+        );
+
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: process.env.EMAIL_FROM,
+            pass: "Dewisavitri:*1",
+          },
+        });
+
+        const mailOptions = {
+          from: process.env.EMAIL_FROM,
+          to: email,
+          subject: `Reset Password on StudMe`,
+          html: `
+                <div width="400px" style="padding:10px; " >   
+                  <p style="color:white;"> You must follow this link to reset your password: </p>
+                  <br/>
+                  <a href="${process.env.REACT_URL}/users/password/reset/${token}"> ${process.env.REACT_URL}/users/password/reset/${token} </a>
+                  <br /> 
+                  <p style="color:white;"> Have fun, and don't hesitate to contact us with your feedback</p>
+                  <hr/>
+                  <p style="color:white;"> StadMe Team </p>
+                  <a href="${process.env.REACT_URL}"> ${process.env.REACT_URL} </a>
+                </div>
+                
+            `,
+        };
+
+        return user.updateOne(
+          {
+            resetPasswordLink: token,
+          },
+          (err, success) => {
+            if (err) {
+              return res.status(404).json({
+                erro: errorHandler(err),
+              });
+            }
+
+            transporter.sendMail(mailOptions, (err, info) => {
+              if (err) {
+                return res.status(400).json({
+                  error: "Something went wrong, try again",
+                });
+              }
+              return res.json({
+                message: `email has been sent to ${email}`,
+              });
+            });
+          }
+        );
+
+        // END ELSE
+      }
+    });
+  }
+};
+
+exports.resetPasswordController = async (req, res) => {
+  const { resetPasswordLink, newPassword } = req.body;
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const firstError = errors.array().map((err) => err.msg)[0];
+
+      return res.status(422).json({
+        error: firstError,
+      });
+    } else {
+      if (resetPasswordLink) {
+        jwt.verify(resetPasswordLink, process.env.JWT_SECRET_RESET, function (
+          err,
+          decode
+        ) {
+          if (err) {
+            return res.status(400).json({
+              error: "Expired link, try again",
+            });
+          } else {
+            User.findOne({ resetPasswordLink }, (err, user) => {
+              if (err || user === null) {
+                return res.status(400).json({
+                  error: "Something went wrong, try later",
+                });
+              } else {
+                user.resetPasswordLink = "";
+                user.password = newPassword;
+                user.save((err, user) => {
+                  if (err) {
+                    console.log("Save error", errorHandler(err));
+                    return res.status(401).json({
+                      error: errorHandler(err),
+                    });
+                  } else {
+                    return res.json({
+                      success: true,
+                      message: "Successfuly reset password",
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
     }
   } catch (error) {}
 };

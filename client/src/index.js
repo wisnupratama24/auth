@@ -6,6 +6,8 @@ import { Register } from "./Pages/Register";
 import "react-toastify/dist/ReactToastify.css";
 import { Activate } from "./Pages/Activate";
 import { Login } from "./Pages/Login";
+import { Forget } from "./Pages/Forget";
+import { Reset } from "./Pages/Reset";
 
 ReactDOM.render(
   <BrowserRouter>
@@ -22,6 +24,16 @@ ReactDOM.render(
         render={(props) => <Activate {...props} />}
       />
       <Route path="/login" exact render={(props) => <Login {...props} />} />
+      <Route
+        path="/users/password/forget"
+        exact
+        render={(props) => <Forget {...props} />}
+      />
+      <Route
+        path="/users/password/reset/:token"
+        exact
+        render={(props) => <Reset {...props} />}
+      />
     </Switch>
   </BrowserRouter>,
   document.getElementById("root")
