@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { isAuth, authenticate } from "./../helpers/auth";
 import axios from "axios";
 import { Redirect, Link } from "react-router-dom";
-
+import { GoogleLogin } from "react-google-login";
 export const Login = ({ history }) => {
   const [disabled, isDisabled] = useState(false);
   const [formData, setFormData] = useState({
@@ -18,6 +18,28 @@ export const Login = ({ history }) => {
       [text]: e.target.value,
     });
   };
+  const responseGoogle = (response) => {
+    sendGoogleToken(response.tokenId);
+  };
+  const sendGoogleToken = (tokenId) => {
+    axios
+      .post(`http://localhost:5000/api/googlelogin`, {
+        idToken: tokenId,
+      })
+      .then((res) => {
+        informParent(res);
+      })
+      .catch((error) => {
+        console.log("GOOGLE SIGNIN ERROR", error.response);
+      });
+  };
+  const informParent = (response) => {
+    authenticate(response, () => {
+      isAuth() && isAuth().role === "admin"
+        ? history.push("/admin")
+        : history.push("/user");
+    });
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
     isDisabled(true);
@@ -28,7 +50,6 @@ export const Login = ({ history }) => {
           password,
         })
         .then(function (res) {
-          // console.log(res);
           authenticate(res, () => {
             console.log(res);
             setFormData({
@@ -112,6 +133,24 @@ export const Login = ({ history }) => {
                 >
                   Sign Up
                 </a>
+                <GoogleLogin
+                  clientId={`${process.env.REACT_APP_GOOGLE_CLIENT}`}
+                  onSuccess={responseGoogle}
+                  onFailure={responseGoogle}
+                  cookiePolicy={"single_host_origin"}
+                  render={(renderProps) => (
+                    <button
+                      onClick={renderProps.onClick}
+                      disabled={renderProps.disabled}
+                      className="w-full mt-3 max-w-xs font-bold shadow-sm rounded-lg py-3 bg-indigo-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline"
+                    >
+                      <div className=" p-2 rounded-full ">
+                        <i class="fa fa-google" aria-hidden="true"></i>
+                      </div>
+                      <span className="ml-4">Sign In with Google</span>
+                    </button>
+                  )}
+                />
               </div>
             </form>
           </div>

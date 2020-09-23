@@ -1,5 +1,4 @@
 import Cookies from "js-cookie";
-import { GoogleLogout } from "react-google-login";
 
 // Set in Cookie
 export const setCookie = (key, value) => {
@@ -45,7 +44,7 @@ export const removeLocalStorage = (key) => {
 export const authenticate = (response, next) => {
   console.log("AUTHENTICATE HELPER ON SIGNIN RESPONSE", response);
   setCookie("token", response.data.token);
-  setLocalStorage("user", response.data.email);
+  setLocalStorage("user", response.data.user);
   next();
 };
 
