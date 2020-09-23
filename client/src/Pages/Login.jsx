@@ -5,6 +5,7 @@ import { isAuth, authenticate } from "./../helpers/auth";
 import axios from "axios";
 import { Redirect, Link } from "react-router-dom";
 import { GoogleLogin } from "react-google-login";
+import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
 export const Login = ({ history }) => {
   const [disabled, isDisabled] = useState(false);
   const [formData, setFormData] = useState({
@@ -21,6 +22,7 @@ export const Login = ({ history }) => {
   const responseGoogle = (response) => {
     sendGoogleToken(response.tokenId);
   };
+
   const sendGoogleToken = (tokenId) => {
     axios
       .post(`http://localhost:5000/api/googlelogin`, {
@@ -31,6 +33,24 @@ export const Login = ({ history }) => {
       })
       .catch((error) => {
         console.log("GOOGLE SIGNIN ERROR", error.response);
+      });
+  };
+
+  const responseFacebook = (response) => {
+    console.log(response);
+    sendFacebookToken(response.userID, response.accessToken);
+  };
+  const sendFacebookToken = (userID, accessToken) => {
+    axios
+      .post(`${process.env.REACT_APP_API_URL}/facebooklogin`, {
+        userID,
+        accessToken,
+      })
+      .then((res) => {
+        informParent(res);
+      })
+      .catch((err) => {
+        toast.error("failed facebook login");
       });
   };
   const informParent = (response) => {
@@ -145,9 +165,27 @@ export const Login = ({ history }) => {
                       className="w-full mt-3 max-w-xs font-bold shadow-sm rounded-lg py-3 bg-indigo-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline"
                     >
                       <div className=" p-2 rounded-full ">
-                        <i class="fa fa-google" aria-hidden="true"></i>
+                        <i className="fa fa-google" aria-hidden="true"></i>
                       </div>
                       <span className="ml-4">Sign In with Google</span>
+                    </button>
+                  )}
+                />
+                <FacebookLogin
+                  appId={`${process.env.REACT_APP_FACEBOOK_CLIENT}`}
+                  autoLoad={false}
+                  fields="name,email,id"
+                  callback={responseFacebook}
+                  render={(renderProps) => (
+                    <button
+                      onClick={renderProps.onClick}
+                      disabled={renderProps.disabled}
+                      className="w-full mt-3 max-w-xs font-bold shadow-sm rounded-lg py-3 bg-indigo-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline"
+                    >
+                      <div className=" p-2 rounded-full ">
+                        <i className="fa fa-facebook" aria-hidden="true"></i>
+                      </div>
+                      <span className="ml-4">Sign In with Facebook</span>
                     </button>
                   )}
                 />
